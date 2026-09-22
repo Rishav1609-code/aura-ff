@@ -1,0 +1,1548 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AURA COMMAND CENTER // vXr Holdings Security Controller</title>
+    <meta name="description" content="Secure administrative controller and clearance dispatcher for AURA Verified Campus Network." />
+
+    <!-- Google Fonts: Space Grotesk 700 & 900 exclusively -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cream: '#FFFDF5',
+              hotred: '#FF6B6B',
+              vividyellow: '#FFD93D',
+              softviolet: '#C4B5FD',
+              neongreen: '#4ADE80',
+              neoncyan: '#00F0FF',
+            },
+            fontFamily: {
+              sans: ['"Space Grotesk"', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+
+    <style>
+      * {
+        font-family: 'Space Grotesk', sans-serif;
+        box-sizing: border-box;
+      }
+      body {
+        background-color: #FFFDF5;
+        color: #000000;
+      }
+      /* Custom Brutalist Scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #FFFDF5;
+        border-left: 3px solid #000;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #000;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #FFD93D;
+      }
+      .brutal-shadow {
+        box-shadow: 6px 6px 0px 0px #000000;
+      }
+      .brutal-shadow-lg {
+        box-shadow: 8px 8px 0px 0px #000000;
+      }
+      .brutal-shadow-sm {
+        box-shadow: 4px 4px 0px 0px #000000;
+      }
+      .brutal-btn {
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+      }
+      .brutal-btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0px 0px 0px 0px #000000 !important;
+      }
+    </style>
+  </head>
+  <body class="bg-cream text-black min-h-screen flex flex-col selection:bg-hotred selection:text-white">
+
+    <!-- TOP SYSTEM BANNER -->
+    <header class="bg-black text-white border-b-4 border-black px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-40">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 bg-vividyellow text-black border-2 border-white flex items-center justify-center font-black text-lg group-hover:bg-hotred group-hover:text-white transition-colors">
+            ▲
+          </div>
+          <div>
+            <span class="text-xs font-black tracking-widest text-vividyellow block leading-none">AURA // vXr HOLDINGS</span>
+            <span class="text-base font-black tracking-tight block leading-none">COMMAND CENTER</span>
+          </div>
+        </a>
+        <span class="hidden md:inline-block bg-hotred text-white text-[10px] font-black uppercase px-2 py-0.5 border border-white">
+          ROOT CLEARANCE LEVEL 0
+        </span>
+      </div>
+
+      <!-- Live Network Ticker -->
+      <div class="hidden lg:flex items-center gap-4 text-xs font-bold">
+        <div class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 px-2.5 py-1">
+          <span class="w-2.5 h-2.5 rounded-full bg-neongreen animate-pulse"></span>
+          <span>CAMPUS MESH: <strong class="text-neongreen" id="headerMeshStatus">ONLINE</strong></span>
+        </div>
+        <div class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 px-2.5 py-1">
+          <span>ACTIVE PEERS: <strong class="text-vividyellow" id="headerActivePeers">5,142</strong></span>
+        </div>
+        <div class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 px-2.5 py-1">
+          <span id="systemClock">00:00:00 UTC</span>
+        </div>
+      </div>
+
+      <!-- Authenticated Admin Profile -->
+      <div class="flex items-center gap-2">
+        <div class="text-right hidden sm:block">
+          <div class="text-xs font-black text-vividyellow" id="adminBadgeName">AURA-SYS-VISHU</div>
+          <div class="text-[10px] font-bold text-gray-400">CHIEF VISIONARY OFFICER</div>
+        </div>
+        <a href="index.html" class="bg-vividyellow hover:bg-hotred hover:text-white text-black border-2 border-white px-3 py-1 text-xs font-black uppercase tracking-wider brutal-btn brutal-shadow-sm flex items-center gap-1">
+          <span>RETURN TO PORTAL &rarr;</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- DASHBOARD CONTAINER -->
+    <div class="flex-1 flex flex-col md:flex-row">
+      
+      <!-- FIXED LEFT SIDEBAR (NAVIGATION) -->
+      <aside class="w-full md:w-64 lg:w-72 bg-cream border-b-4 md:border-b-0 md:border-r-4 border-black p-4 flex flex-col justify-between shrink-0">
+        <div class="space-y-4">
+          
+          <!-- Admin Identity Badge Card -->
+          <div class="bg-white border-4 border-black p-3.5 brutal-shadow">
+            <div class="flex items-center gap-2.5 mb-2 pb-2 border-b-2 border-black">
+              <div class="w-9 h-9 bg-hotred text-white border-2 border-black flex items-center justify-center font-black text-base">
+                ⚡
+              </div>
+              <div class="overflow-hidden">
+                <span class="text-[10px] font-black uppercase bg-vividyellow px-1.5 py-0.2 border border-black inline-block mb-0.5">ADMINISTRATOR</span>
+                <p class="font-black text-sm truncate" id="sidebarAdminId">AURA-SYS-VISHU</p>
+              </div>
+            </div>
+            <p class="text-[11px] font-bold text-gray-700 leading-tight">
+              Rahul Foundation Society Disciplinary & Infrastructure Command Node.
+            </p>
+          </div>
+
+          <!-- Navigation Menu -->
+          <nav class="space-y-2.5" id="navContainer">
+            <button 
+              type="button" 
+              onclick="switchAdminView('clearances')" 
+              id="nav-clearances"
+              class="w-full text-left bg-vividyellow text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow brutal-btn flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span>📋</span>
+                <span>PENDING CLEARANCES</span>
+              </div>
+              <span id="badgePendingCount" class="bg-hotred text-white border-2 border-black text-[10px] font-black px-1.5 py-0.2">3</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="switchAdminView('directory')" 
+              id="nav-directory"
+              class="w-full text-left bg-white hover:bg-cream text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow-sm brutal-btn flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span>👥</span>
+                <span>USER & ADMIN DIRECTORY</span>
+              </div>
+              <span class="text-xs">&rarr;</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="switchAdminView('noticeboard')" 
+              id="nav-noticeboard"
+              class="w-full text-left bg-white hover:bg-cream text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow-sm brutal-btn flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span>📢</span>
+                <span>SOCIETY NOTICEBOARD</span>
+              </div>
+              <span class="text-xs">&rarr;</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="switchAdminView('moderation')" 
+              id="nav-moderation"
+              class="w-full text-left bg-white hover:bg-cream text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow-sm brutal-btn flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span>🛡️</span>
+                <span>REPORTS & BLOCK LOGS</span>
+              </div>
+              <span id="badgeReportsCount" class="bg-hotred text-white border-2 border-black text-[10px] font-black px-1.5 py-0.2">2</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="switchAdminView('snippet')" 
+              id="nav-snippet"
+              class="w-full text-left bg-softviolet hover:bg-purple-300 text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow-sm brutal-btn flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span>📦</span>
+                <span>USER BLOCK MODAL CODE</span>
+              </div>
+              <span class="text-xs">CODE</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Sidebar Footer Status -->
+        <div class="mt-6 pt-4 border-t-2 border-black space-y-2">
+          <div class="bg-black text-white p-2 text-center text-[10px] font-black uppercase tracking-widest">
+            ENCRYPTION: AES-256 P2P
+          </div>
+          <button onclick="simulateAddQueueItem()" class="w-full bg-cream hover:bg-vividyellow text-black border-2 border-black py-1.5 text-[10px] font-black uppercase brutal-btn">
+            + SIMULATE NEW APPLICANT
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl">
+
+        <!-- ================================================================= -->
+        <!-- VIEW 1: PENDING CLEARANCES (Approval Queue) -->
+        <!-- ================================================================= -->
+        <section id="view-clearances" class="space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b-4 border-black pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-vividyellow border-2 border-black px-2 py-0.5 text-xs font-black uppercase">QUEUE CONTROLLER</span>
+                <span class="text-xs font-bold text-gray-700">IDENTITY VERIFICATION DESK</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-tight mt-1">
+                PENDING CLEARANCES (<span id="clearancesTotalCount">3</span>)
+              </h2>
+            </div>
+            
+            <!-- Quick Filter / Action -->
+            <div class="flex items-center gap-2">
+              <button onclick="approveAllPending()" class="bg-neongreen hover:bg-emerald-400 text-black border-4 border-black px-4 py-2 font-black text-xs uppercase tracking-wider brutal-shadow brutal-btn">
+                ✓ BATCH APPROVE ALL
+              </button>
+            </div>
+          </div>
+
+          <!-- Pending Applications Grid -->
+          <div id="pendingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="clearancesEmptyState" class="hidden bg-white border-4 border-black p-12 text-center brutal-shadow-lg">
+            <div class="text-4xl mb-2">🎉</div>
+            <h3 class="text-xl font-black uppercase">CLEARANCE QUEUE IS EMPTY</h3>
+            <p class="text-xs font-bold text-gray-600 mt-1">All applicant student IDs have been processed and enrolled into the Aura network.</p>
+            <button onclick="resetDemoQueue()" class="mt-4 bg-vividyellow border-4 border-black px-4 py-2 text-xs font-black uppercase brutal-btn brutal-shadow-sm">
+              RELOAD DEMO APPLICANTS
+            </button>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 2: USER & ADMIN DIRECTORY -->
+        <!-- ================================================================= -->
+        <section id="view-directory" class="hidden space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b-4 border-black pb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-softviolet border-2 border-black px-2 py-0.5 text-xs font-black uppercase">DATABASE AUDIT</span>
+                <span class="text-xs font-bold text-gray-700">CAMPUS REGISTRY</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-tight mt-1">
+                USER & ADMIN DIRECTORY
+              </h2>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openModal('modalAddUser')" class="bg-vividyellow hover:bg-yellow-300 text-black border-4 border-black px-4 py-2 font-black text-xs uppercase tracking-wider brutal-shadow brutal-btn">
+                + ADD NEW USER
+              </button>
+              <button onclick="openModal('modalAddAdmin')" class="bg-hotred hover:bg-red-600 text-white border-4 border-black px-4 py-2 font-black text-xs uppercase tracking-wider brutal-shadow brutal-btn">
+                ⚡ ADD NEW ADMIN
+              </button>
+            </div>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="bg-white border-4 border-black p-4 brutal-shadow flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+              <span class="font-black text-xs uppercase">SEARCH:</span>
+              <input 
+                type="text" 
+                id="directorySearch" 
+                oninput="filterDirectoryTable()" 
+                placeholder="Search by Aura ID, Name, College..." 
+                class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none"
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-black text-xs uppercase">FILTER:</span>
+              <select id="directoryRoleFilter" onchange="filterDirectoryTable()" class="bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none">
+                <option value="ALL">ALL ROLES</option>
+                <option value="STUDENT">STUDENTS</option>
+                <option value="FACULTY">FACULTY</option>
+                <option value="ADMIN">ADMINISTRATORS</option>
+                <option value="BANNED">BANNED ENTITIES</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- High-Density Neo-Brutalist Data Table -->
+          <div class="bg-white border-4 border-black brutal-shadow-lg overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-black text-white text-xs font-black uppercase tracking-wider">
+                  <th class="border-2 border-black p-3">AURA ID</th>
+                  <th class="border-2 border-black p-3">NAME</th>
+                  <th class="border-2 border-black p-3">ROLE</th>
+                  <th class="border-2 border-black p-3">COLLEGE / DEPT</th>
+                  <th class="border-2 border-black p-3 text-center">STATUS</th>
+                  <th class="border-2 border-black p-3 text-right">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="directoryTableBody" class="text-xs font-bold divide-y-2 divide-black">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 3: SOCIETY NOTICEBOARD (Broadcast Controller) -->
+        <!-- ================================================================= -->
+        <section id="view-noticeboard" class="hidden space-y-6">
+          <div class="border-b-4 border-black pb-4">
+            <div class="flex items-center gap-2">
+              <span class="bg-vividyellow border-2 border-black px-2 py-0.5 text-xs font-black uppercase">LIVE MESH DISPATCH</span>
+              <span class="text-xs font-bold text-gray-700">OFFICIAL NOTIFICATION ENGINE</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-tight mt-1">
+              SOCIETY NOTICEBOARD CONTROLLER
+            </h2>
+          </div>
+
+          <!-- Broadcast Publisher Form -->
+          <div class="bg-white border-4 border-black p-6 brutal-shadow-lg space-y-5">
+            <h3 class="text-lg font-black uppercase border-b-2 border-black pb-2 flex items-center justify-between">
+              <span>📢 DRAFT LIVE NETWORK BROADCAST</span>
+              <span class="text-xs bg-black text-white px-2 py-0.5 font-bold uppercase">TARGET: 5,000+ USERS</span>
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Post Type -->
+              <div>
+                <label class="block font-black text-xs uppercase mb-1">POST CATEGORY</label>
+                <select id="broadcastType" class="w-full bg-cream border-4 border-black p-3 font-black text-xs uppercase focus:bg-vividyellow focus:outline-none">
+                  <option value="URGENT">🚨 URGENT EMERGENCY DISPATCH</option>
+                  <option value="EVENT">🎪 CAMPUS EVENT / HACKATHON</option>
+                  <option value="INFO" selected>ℹ️ OFFICIAL SOCIETY INFO</option>
+                  <option value="DISCIPLINARY">⚠️ DISCIPLINARY ADVISORY</option>
+                </select>
+              </div>
+
+              <!-- Target Audience -->
+              <div>
+                <label class="block font-black text-xs uppercase mb-1">AUDIENCE SCOPE</label>
+                <select id="broadcastAudience" class="w-full bg-cream border-4 border-black p-3 font-bold text-xs uppercase focus:bg-vividyellow focus:outline-none">
+                  <option value="ALL">ALL RAHUL FOUNDATION MEMBERS</option>
+                  <option value="ENGINEERING">ENGINEERING CAMPUS ONLY</option>
+                  <option value="FACULTY">FACULTY & DEANS ONLY</option>
+                  <option value="HOSTEL">HOSTEL RESIDENTS</option>
+                </select>
+              </div>
+
+              <!-- Author Signature -->
+              <div>
+                <label class="block font-black text-xs uppercase mb-1">AUTHOR SIGNATURE</label>
+                <input 
+                  type="text" 
+                  id="broadcastAuthor" 
+                  value="ADMIN VISHU RAJ // CVO, vXr HOLDINGS" 
+                  class="w-full bg-cream border-4 border-black p-3 font-bold text-xs uppercase focus:bg-vividyellow focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Broadcast Title & Content -->
+            <div>
+              <label class="block font-black text-xs uppercase mb-1">BROADCAST HEADLINE / TITLE</label>
+              <input 
+                type="text" 
+                id="broadcastTitle" 
+                placeholder="e.g. ANNUAL TECH SYMPOSIUM 2026 REGISTRATIONS OPEN" 
+                class="w-full bg-cream border-4 border-black p-3 font-black text-sm uppercase focus:bg-vividyellow focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block font-black text-xs uppercase mb-1">BROADCAST BODY (SUPPORTS PROTOCOL FORMATTING)</label>
+              <textarea 
+                id="broadcastContent" 
+                rows="4" 
+                placeholder="Enter exact announcement text to be broadcasted to all active society member nodes..."
+                class="w-full bg-cream border-4 border-black p-3 font-bold text-xs focus:bg-vividyellow focus:outline-none resize-y"
+              ></textarea>
+            </div>
+
+            <!-- Priority & Push Action -->
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+              <label class="flex items-center gap-2 cursor-pointer font-black text-xs uppercase select-none">
+                <input type="checkbox" id="broadcastPin" checked class="w-5 h-5 accent-hotred border-2 border-black" />
+                <span>PIN TO TOP WITH PULSING NEO-BORDER BANNER</span>
+              </label>
+
+              <button 
+                type="button" 
+                onclick="publishLiveBroadcast()" 
+                class="bg-vividyellow hover:bg-hotred hover:text-white text-black border-4 border-black px-6 py-3 font-black text-sm uppercase tracking-wider brutal-shadow brutal-btn flex items-center gap-2"
+              >
+                <span>⚡ PUBLISH BROADCAST TO NETWORK &rarr;</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Published Broadcasts Log -->
+          <div class="space-y-3">
+            <h3 class="text-base font-black uppercase">PAST PUBLISHED BROADCASTS</h3>
+            <div id="publishedBroadcastsList" class="space-y-3">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 4: MODERATION: REPORTS & BLOCKS (Security Logs) -->
+        <!-- ================================================================= -->
+        <section id="view-moderation" class="hidden space-y-8">
+          <div class="border-b-4 border-black pb-4">
+            <div class="flex items-center gap-2">
+              <span class="bg-hotred text-white border-2 border-black px-2 py-0.5 text-xs font-black uppercase">ZERO-TOLERANCE SECURITY</span>
+              <span class="text-xs font-bold text-gray-700">AUDIT TRAIL</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-tight mt-1">
+              MODERATION: REPORTS & BLOCK AUDIT LOGS
+            </h2>
+          </div>
+
+          <!-- SECTION A: USER REPORTS (Disciplinary Complaints) -->
+          <div class="space-y-4">
+            <div class="bg-hotred text-white border-4 border-black p-3.5 brutal-shadow flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">⚠️</span>
+                <h3 class="font-black text-base uppercase tracking-tight">SECTION A: INCOMING USER COMPLAINTS & REPORTS</h3>
+              </div>
+              <span class="text-xs font-black uppercase bg-black text-white px-2 py-0.5 border border-white">
+                IMMEDIATE DISCIPLINARY REVIEW
+              </span>
+            </div>
+
+            <div class="bg-white border-4 border-black brutal-shadow overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-black text-white text-xs font-black uppercase">
+                    <th class="border-2 border-black p-3">REPORTER ID</th>
+                    <th class="border-2 border-black p-3">REPORTED ENTITY</th>
+                    <th class="border-2 border-black p-3">OFFENSE CATEGORY</th>
+                    <th class="border-2 border-black p-3">REPORT REASON & AUDIT DETAILS</th>
+                    <th class="border-2 border-black p-3 text-right">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody" class="text-xs font-bold divide-y-2 divide-black">
+                  <!-- Dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SECTION B: BLOCK LOGS (Peer-to-Peer Block Audit) -->
+          <div class="space-y-4">
+            <div class="bg-vividyellow text-black border-4 border-black p-3.5 brutal-shadow flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🔒</span>
+                <h3 class="font-black text-base uppercase tracking-tight">SECTION B: PEER-TO-PEER BLOCK AUDIT LOGS (WITH USER REASONS)</h3>
+              </div>
+              <span class="text-xs font-black uppercase bg-black text-white px-2 py-0.5">
+                REAL-TIME TELEMETRY
+              </span>
+            </div>
+
+            <p class="text-xs font-bold text-gray-700">
+              * Crucial Requirement: Displaying exact messages and reasons provided by the blocking user during peer video/chat termination.
+            </p>
+
+            <div class="bg-white border-4 border-black brutal-shadow overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-black text-white text-xs font-black uppercase">
+                    <th class="border-2 border-black p-3">TIMESTAMP</th>
+                    <th class="border-2 border-black p-3">BLOCKER ID</th>
+                    <th class="border-2 border-black p-3">TARGET BLOCKED ID</th>
+                    <th class="border-2 border-black p-3">EXACT REASON / MESSAGE PROVIDED</th>
+                    <th class="border-2 border-black p-3 text-right">SYSTEM ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="blockLogsTableBody" class="text-xs font-bold divide-y-2 divide-black">
+                  <!-- Dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 5: USER DASHBOARD SNIPPET (Drop-in Code for User Dashboard) -->
+        <!-- ================================================================= -->
+        <section id="view-snippet" class="hidden space-y-6">
+          <div class="border-b-4 border-black pb-4">
+            <div class="flex items-center gap-2">
+              <span class="bg-softviolet border-2 border-black px-2 py-0.5 text-xs font-black uppercase">INTEGRATION ASSET</span>
+              <span class="text-xs font-bold text-gray-700">USER CLIENT COMPONENT</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black uppercase tracking-tight mt-1">
+              USER DASHBOARD "BLOCK USER" MODAL SNIPPET
+            </h2>
+          </div>
+
+          <!-- Interactive Live Preview Card -->
+          <div class="bg-white border-4 border-black p-6 brutal-shadow-lg space-y-4">
+            <div class="flex items-center justify-between border-b-2 border-black pb-2">
+              <h3 class="font-black text-sm uppercase">INTERACTIVE LIVE MODAL PREVIEW</h3>
+              <button onclick="openModal('userBlockModalDemo')" class="bg-hotred text-white border-2 border-black px-3 py-1 text-xs font-black uppercase brutal-btn brutal-shadow-sm">
+                TRIGGER PREVIEW MODAL
+              </button>
+            </div>
+            <p class="text-xs font-bold text-gray-700">
+              This is the exact Neo-Brutalist modal integrated into the user-facing chatroom. It collects structured reason data so admins can inspect peer conflicts in Section B.
+            </p>
+          </div>
+
+          <!-- Raw HTML Code Display with Copy Button -->
+          <div class="bg-zinc-950 text-emerald-400 border-4 border-black p-4 brutal-shadow-lg relative font-mono text-xs overflow-x-auto">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+              <span class="text-zinc-400 font-bold uppercase tracking-wider">BLOCK_MODAL_COMPONENT.HTML</span>
+              <button onclick="copySnippetCode()" id="copyCodeBtn" class="bg-vividyellow text-black border-2 border-black px-3 py-1 font-sans text-xs font-black uppercase brutal-btn">
+                COPY SNIPPET
+              </button>
+            </div>
+            <pre id="snippetCodeBlock" class="text-xs whitespace-pre-wrap leading-relaxed text-zinc-300">
+&lt;!-- ============================================================== --&gt;
+&lt;!-- AURA STANDARD USER DASHBOARD // BLOCK USER MODAL (NEO-BRUTALIST) --&gt;
+&lt;!-- ============================================================== --&gt;
+&lt;div id="blockUserModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden"&gt;
+  &lt;div class="bg-white border-4 border-black p-6 sm:p-8 max-w-lg w-full shadow-[10px_10px_0px_0px_#FF6B6B] relative"&gt;
+    
+    &lt;!-- Close Button --&gt;
+    &lt;button onclick="closeBlockModal()" class="absolute top-4 right-4 bg-hotred text-white border-2 border-black w-8 h-8 font-black text-sm hover:bg-black shadow-[2px_2px_0px_0px_#000]"&gt;
+      ✕
+    &lt;/button&gt;
+
+    &lt;!-- Modal Header --&gt;
+    &lt;div class="flex items-center gap-3 border-b-4 border-black pb-3 mb-4"&gt;
+      &lt;div class="w-10 h-10 bg-hotred text-white border-2 border-black flex items-center justify-center font-black text-lg"&gt;
+        ⛔
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;span class="bg-black text-white text-[10px] font-black uppercase px-2 py-0.5"&gt;
+          ZERO-TOLERANCE SAFETY
+        &lt;/span&gt;
+        &lt;h3 class="text-xl font-black uppercase tracking-tight"&gt;
+          BLOCK &amp; TERMINATE SESSION
+        &lt;/h3&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Body --&gt;
+    &lt;p class="text-xs font-bold text-gray-800 mb-3"&gt;
+      You are about to block &lt;strong class="text-black bg-vividyellow px-1" id="blockTargetName"&gt;aura0102&lt;/strong&gt;. 
+      They will be immediately disconnected and prevented from matching with you again.
+    &lt;/p&gt;
+
+    &lt;!-- Form --&gt;
+    &lt;form onsubmit="handleBlockSubmit(event)" class="space-y-4"&gt;
+      &lt;div&gt;
+        &lt;label class="block font-black text-xs uppercase mb-1 tracking-wider"&gt;
+          REASON FOR BLOCKING (Optional but Recommended)
+        &lt;/label&gt;
+        &lt;textarea 
+          id="blockReasonInput" 
+          rows="3" 
+          placeholder="e.g. Inappropriate language, spamming links, harassment..."
+          class="w-full bg-[#FFFDF5] border-4 border-black rounded-none p-3 font-bold text-xs text-black placeholder:text-gray-500 focus:bg-[#FFD93D] focus:outline-none focus-visible:bg-[#FFD93D] focus-visible:outline-none transition-colors shadow-[4px_4px_0px_0px_#000]"
+        &gt;&lt;/textarea&gt;
+        &lt;span class="text-[10px] font-bold text-gray-600 block mt-1"&gt;
+          * This reason is confidentially logged to the Disciplinary Command Center for audit.
+        &lt;/span&gt;
+      &lt;/div&gt;
+
+      &lt;!-- Action Buttons --&gt;
+      &lt;div class="flex gap-2 pt-2"&gt;
+        &lt;button 
+          type="submit" 
+          class="flex-1 bg-hotred hover:bg-black text-white border-4 border-black p-3 font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+        &gt;
+          CONFIRM PERMANENT BLOCK ⛔
+        &lt;/button&gt;
+        &lt;button 
+          type="button" 
+          onclick="closeBlockModal()" 
+          class="bg-cream hover:bg-gray-200 text-black border-4 border-black px-4 py-3 font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+        &gt;
+          CANCEL
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/form&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+            </pre>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODALS -->
+    <!-- =================================================================== -->
+
+    <!-- MODAL 1: VIEW UPLOADED ID LIGHTBOX -->
+    <div id="modalViewId" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white border-4 border-black p-6 max-w-md w-full brutal-shadow-lg relative">
+        <button onclick="closeModal('modalViewId')" class="absolute top-3 right-3 bg-hotred text-white border-2 border-black w-8 h-8 font-black text-sm">
+          ✕
+        </button>
+        <div class="flex items-center gap-2 border-b-2 border-black pb-2 mb-4">
+          <span class="bg-vividyellow px-2 py-0.5 text-xs font-black uppercase border border-black">ID INSPECTION</span>
+          <h4 class="font-black text-sm uppercase" id="idModalApplicantName">STUDENT ID CARD</h4>
+        </div>
+        
+        <!-- Mock Physical ID Card Canvas Graphic -->
+        <div class="bg-cream border-4 border-black p-4 brutal-shadow space-y-3">
+          <div class="bg-black text-white p-2 text-center text-xs font-black uppercase">
+            RAHUL FOUNDATION SOCIETY // IDENTITY BADGE
+          </div>
+          <div class="flex gap-3">
+            <div class="w-20 h-24 bg-zinc-200 border-2 border-black flex flex-col items-center justify-center font-black text-2xl shrink-0">
+              👤
+              <span class="text-[8px] font-black text-gray-500 mt-1">PHOTO ID</span>
+            </div>
+            <div class="text-xs space-y-1">
+              <p><strong>NAME:</strong> <span id="idModalName">Sourav Ganguly</span></p>
+              <p><strong>ROLL NO:</strong> <span id="idModalRoll">RFC-2024-1182</span></p>
+              <p><strong>COLLEGE:</strong> <span id="idModalCollege">Rahul Engg College</span></p>
+              <p><strong>ROLE:</strong> <span id="idModalRole">Student (B.Tech)</span></p>
+              <p><strong>TIMESTAMP:</strong> <span id="idModalDate">2026-09-21 11:42</span></p>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-black text-[10px] font-mono text-center tracking-widest">
+            ||||| |||| || |||||| ||||| | ||||
+          </div>
+        </div>
+
+        <div class="mt-4 flex gap-2">
+          <button id="modalApproveBtn" onclick="approveFromModal()" class="flex-1 bg-neongreen text-black border-4 border-black p-2.5 font-black text-xs uppercase brutal-shadow-sm brutal-btn">
+            ✓ APPROVE &amp; ENROLL
+          </button>
+          <button id="modalRejectBtn" onclick="rejectFromModal()" class="bg-hotred text-white border-4 border-black px-4 py-2.5 font-black text-xs uppercase brutal-shadow-sm brutal-btn">
+            REJECT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: ADD NEW USER -->
+    <div id="modalAddUser" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white border-4 border-black p-6 max-w-md w-full brutal-shadow-lg relative">
+        <button onclick="closeModal('modalAddUser')" class="absolute top-3 right-3 bg-hotred text-white border-2 border-black w-8 h-8 font-black text-sm">
+          ✕
+        </button>
+        <div class="border-b-2 border-black pb-2 mb-4">
+          <span class="bg-vividyellow text-black px-2 py-0.5 text-[10px] font-black uppercase border border-black inline-block">MANUAL ENROLLMENT</span>
+          <h4 class="font-black text-lg uppercase mt-1">+ ADD NEW VERIFIED USER</h4>
+        </div>
+
+        <form onsubmit="handleManualAddUser(event)" class="space-y-3">
+          <div>
+            <label class="block font-black text-xs uppercase mb-1">FULL NAME</label>
+            <input type="text" id="addUserName" required placeholder="e.g. Tanmoy Sharma" class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-black text-xs uppercase mb-1">COLLEGE / CAMPUS</label>
+            <input type="text" id="addUserCollege" required value="Rahul Engineering College" class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-black text-xs uppercase mb-1">ROLE</label>
+              <select id="addUserRole" class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none">
+                <option value="Student">Student</option>
+                <option value="Faculty">Faculty</option>
+                <option value="Council Member">Council Member</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-black text-xs uppercase mb-1">CUSTOM AURA ID</label>
+              <input type="text" id="addUserCustomId" placeholder="Auto-generated if blank" class="w-full bg-cream border-2 border-black p-2 font-mono font-bold text-xs focus:bg-vividyellow focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="w-full bg-neongreen text-black border-4 border-black p-3 font-black text-xs uppercase brutal-shadow brutal-btn">
+              CREATE &amp; ACTIVATE USER ACCOUNT &rarr;
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 3: ADD NEW ADMIN -->
+    <div id="modalAddAdmin" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white border-4 border-black p-6 max-w-md w-full brutal-shadow-lg relative">
+        <button onclick="closeModal('modalAddAdmin')" class="absolute top-3 right-3 bg-hotred text-white border-2 border-black w-8 h-8 font-black text-sm">
+          ✕
+        </button>
+        <div class="border-b-2 border-black pb-2 mb-4">
+          <span class="bg-hotred text-white px-2 py-0.5 text-[10px] font-black uppercase border border-black inline-block">EXECUTIVE CLEARANCE</span>
+          <h4 class="font-black text-lg uppercase mt-1">⚡ PROVISION NEW SYSTEM ADMIN</h4>
+        </div>
+
+        <form onsubmit="handleManualAddAdmin(event)" class="space-y-3">
+          <div>
+            <label class="block font-black text-xs uppercase mb-1">ADMIN USERNAME (MUST USE AURA-SYS- FORMAT)</label>
+            <input type="text" id="addAdminUsername" required placeholder="e.g. AURA-SYS-ROHIT" class="w-full bg-cream border-4 border-black p-2.5 font-black text-xs uppercase focus:bg-vividyellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-black text-xs uppercase mb-1">OFFICER / EXECUTIVE NAME</label>
+            <input type="text" id="addAdminName" required placeholder="e.g. Rohit Sen, Dean of Students" class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-black text-xs uppercase mb-1">CLEARANCE LEVEL</label>
+            <select id="addAdminLevel" class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none">
+              <option value="ROOT LEVEL 0">ROOT LEVEL 0 (Executive / CVO)</option>
+              <option value="LEVEL 1 DISCIPLINARY">LEVEL 1 (Disciplinary Committee)</option>
+              <option value="LEVEL 2 MODERATOR">LEVEL 2 (Hostel Proctor)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-black text-xs uppercase mb-1">SECURE PASSKEY</label>
+            <input type="password" id="addAdminPasskey" required placeholder="Enter strong passkey" class="w-full bg-cream border-2 border-black p-2 font-bold text-xs focus:bg-vividyellow focus:outline-none" />
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="w-full bg-hotred text-white border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow brutal-btn">
+              PROVISION &amp; SIGN ROOT KEY &rarr;
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 4: INTERACTIVE USER BLOCK MODAL DEMO -->
+    <div id="userBlockModalDemo" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white border-4 border-black p-6 sm:p-8 max-w-lg w-full brutal-shadow-lg relative">
+        <button onclick="closeModal('userBlockModalDemo')" class="absolute top-4 right-4 bg-hotred text-white border-2 border-black w-8 h-8 font-black text-sm hover:bg-black">
+          ✕
+        </button>
+
+        <div class="flex items-center gap-3 border-b-4 border-black pb-3 mb-4">
+          <div class="w-10 h-10 bg-hotred text-white border-2 border-black flex items-center justify-center font-black text-lg">
+            ⛔
+          </div>
+          <div>
+            <span class="bg-black text-white text-[10px] font-black uppercase px-2 py-0.5">
+              ZERO-TOLERANCE SAFETY
+            </span>
+            <h3 class="text-xl font-black uppercase tracking-tight">
+              BLOCK &amp; TERMINATE SESSION
+            </h3>
+          </div>
+        </div>
+
+        <p class="text-xs font-bold text-gray-800 mb-3">
+          You are about to block <strong class="text-black bg-vividyellow px-1">aura0102 (Ananya Roy)</strong>. 
+          They will be immediately disconnected and prevented from matching with you again.
+        </p>
+
+        <form onsubmit="handleDemoBlockSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block font-black text-xs uppercase mb-1 tracking-wider">
+              REASON FOR BLOCKING (Optional but Recommended)
+            </label>
+            <textarea 
+              id="demoBlockReason" 
+              rows="3" 
+              placeholder="e.g. Inappropriate language, spamming links, harassment..."
+              class="w-full bg-[#FFFDF5] border-4 border-black rounded-none p-3 font-bold text-xs text-black placeholder:text-gray-500 focus:bg-[#FFD93D] focus:outline-none focus-visible:bg-[#FFD93D] focus-visible:outline-none transition-colors shadow-[4px_4px_0px_0px_#000]"
+            ></textarea>
+            <span class="text-[10px] font-bold text-gray-600 block mt-1">
+              * This reason is confidentially logged to the Disciplinary Command Center for audit.
+            </span>
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <button 
+              type="submit" 
+              class="flex-1 bg-hotred hover:bg-black text-white border-4 border-black p-3 font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+            >
+              CONFIRM PERMANENT BLOCK ⛔
+            </button>
+            <button 
+              type="button" 
+              onclick="closeModal('userBlockModalDemo')" 
+              class="bg-cream hover:bg-gray-200 text-black border-4 border-black px-4 py-3 font-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+            >
+              CANCEL
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- JAVASCRIPT STATE ENGINE & VIEW CONTROLLER -->
+    <!-- =================================================================== -->
+    <script>
+      // =======================================================================
+      // INITIAL PERSISTENT DATA SEED
+      // =======================================================================
+      const DEFAULT_PENDING_APPLICANTS = [
+        {
+          id: 'app_1',
+          name: 'Sourav Ganguly',
+          rollNo: 'RFC-2024-1182',
+          role: 'Student (B.Tech)',
+          college: 'Rahul Engineering College',
+          dept: 'Mechanical Engineering',
+          submittedAt: '2026-09-21 11:42',
+          cardId: 'ID-REC-9912'
+        },
+        {
+          id: 'app_2',
+          name: 'Dr. Debashis Sen',
+          rollNo: 'FAC-CS-041',
+          role: 'Faculty (Professor)',
+          college: 'Rahul Science Institute',
+          dept: 'Computer Science & AI',
+          submittedAt: '2026-09-21 12:15',
+          cardId: 'ID-RSI-0041'
+        },
+        {
+          id: 'app_3',
+          name: 'Priyanka Mukherjee',
+          rollNo: 'RFC-2023-8840',
+          role: 'Student (B.Pharm)',
+          college: 'Rahul Institute of Pharmacy',
+          dept: 'Pharmaceutical Tech',
+          submittedAt: '2026-09-21 12:50',
+          cardId: 'ID-RIP-8840'
+        }
+      ];
+
+      const DEFAULT_DIRECTORY = [
+        { auraId: 'AURA-SYS-VISHU', name: 'Vishu Raj', role: 'ADMIN', college: 'vXr Holdings / Society CVO', status: 'ACTIVE', isAdmin: true },
+        { auraId: 'AURA-SYS-RISHAV', name: 'Rishav Raj', role: 'ADMIN', college: 'vXr Holdings / Society CEO', status: 'ACTIVE', isAdmin: true },
+        { auraId: 'aura0001', name: 'Abhishek Roy', role: 'STUDENT', college: 'Rahul Engineering College', status: 'ACTIVE', isAdmin: false },
+        { auraId: 'aura0012', name: 'Prof. S. K. Mukherjee', role: 'FACULTY', college: 'Rahul Institute of Technology', status: 'ACTIVE', isAdmin: false },
+        { auraId: 'aura0045', name: 'Rohan Karmakar', role: 'STUDENT', college: 'Rahul College of Pharmacy', status: 'ACTIVE', isAdmin: false },
+        { auraId: 'aura0102', name: 'Ananya Roy', role: 'STUDENT', college: 'Rahul Management College', status: 'ACTIVE', isAdmin: false },
+        { auraId: 'aura0144', name: 'Kushal Paul', role: 'STUDENT', college: 'Rahul Science Institute', status: 'BANNED', isAdmin: false }
+      ];
+
+      const DEFAULT_BROADCASTS = [
+        {
+          id: 'bc_1',
+          type: 'INFO',
+          audience: 'ALL RAHUL FOUNDATION MEMBERS',
+          title: 'AURA P2P V4 ENGINE LIVE DEPLOYMENT',
+          content: 'Zero-anonymity encrypted campus mesh communications activated for all verified members.',
+          author: 'ADMIN VISHU RAJ // CVO',
+          timestamp: '2026-09-21 10:00 UTC',
+          pinned: true
+        }
+      ];
+
+      const DEFAULT_REPORTS = [
+        {
+          id: 'rep_1',
+          reporterId: 'aura0045',
+          reportedId: 'aura0144',
+          category: 'HARASSMENT / MISCONDUCT',
+          reason: 'User repeatedly sent unwanted text messages and refused to maintain respectful campus conduct in private video room.',
+          timestamp: '2026-09-21 09:30 UTC'
+        },
+        {
+          id: 'rep_2',
+          reporterId: 'aura0001',
+          reportedId: 'aura0102',
+          category: 'UNSOLICITED PROMOTIONS',
+          reason: 'Spamming external discord links and paid assignment solicitations during class discussion.',
+          timestamp: '2026-09-21 11:05 UTC'
+        }
+      ];
+
+      const DEFAULT_BLOCK_LOGS = [
+        {
+          id: 'blk_1',
+          timestamp: '2026-09-21 12:44:10',
+          blockerId: 'aura0045',
+          blockedId: 'aura0102',
+          reason: 'Inappropriate language and unsolicited spam links.'
+        },
+        {
+          id: 'blk_2',
+          timestamp: '2026-09-21 13:02:18',
+          blockerId: 'aura0001',
+          blockedId: 'aura0144',
+          reason: 'Refused to turn on verified student camera feed during group peer session.'
+        }
+      ];
+
+      // Admin State Object
+      const AdminState = {
+        currentView: 'clearances',
+        activeAdmin: 'AURA-SYS-VISHU',
+        pendingApplicants: JSON.parse(localStorage.getItem('aura_admin_pending') || JSON.stringify(DEFAULT_PENDING_APPLICANTS)),
+        directory: JSON.parse(localStorage.getItem('aura_admin_directory') || JSON.stringify(DEFAULT_DIRECTORY)),
+        broadcasts: JSON.parse(localStorage.getItem('aura_admin_broadcasts') || JSON.stringify(DEFAULT_BROADCASTS)),
+        reports: JSON.parse(localStorage.getItem('aura_admin_reports') || JSON.stringify(DEFAULT_REPORTS)),
+        blockLogs: JSON.parse(localStorage.getItem('aura_admin_block_logs') || JSON.stringify(DEFAULT_BLOCK_LOGS)),
+        selectedApplicant: null
+      };
+
+      function saveState() {
+        localStorage.setItem('aura_admin_pending', JSON.stringify(AdminState.pendingApplicants));
+        localStorage.setItem('aura_admin_directory', JSON.stringify(AdminState.directory));
+        localStorage.setItem('aura_admin_broadcasts', JSON.stringify(AdminState.broadcasts));
+        localStorage.setItem('aura_admin_reports', JSON.stringify(AdminState.reports));
+        localStorage.setItem('aura_admin_block_logs', JSON.stringify(AdminState.blockLogs));
+      }
+
+      // =======================================================================
+      // NAVIGATION CONTROLLER
+      // =======================================================================
+      function switchAdminView(viewId) {
+        AdminState.currentView = viewId;
+        const views = ['clearances', 'directory', 'noticeboard', 'moderation', 'snippet'];
+
+        views.forEach(v => {
+          const viewEl = document.getElementById(`view-${v}`);
+          const navEl = document.getElementById(`nav-${v}`);
+          if (viewEl) {
+            if (v === viewId) {
+              viewEl.classList.remove('hidden');
+            } else {
+              viewEl.classList.add('hidden');
+            }
+          }
+          if (navEl) {
+            if (v === viewId) {
+              navEl.className = 'w-full text-left bg-vividyellow text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow brutal-btn flex items-center justify-between';
+            } else {
+              navEl.className = 'w-full text-left bg-white hover:bg-cream text-black border-4 border-black p-3 font-black text-xs uppercase tracking-wider brutal-shadow-sm brutal-btn flex items-center justify-between';
+            }
+          }
+        });
+
+        // Refresh views
+        if (viewId === 'clearances') renderPendingQueue();
+        if (viewId === 'directory') renderDirectoryTable();
+        if (viewId === 'noticeboard') renderBroadcasts();
+        if (viewId === 'moderation') renderModerationLogs();
+      }
+
+      // =======================================================================
+      // VIEW 1: PENDING CLEARANCES
+      // =======================================================================
+      function renderPendingQueue() {
+        const grid = document.getElementById('pendingGrid');
+        const emptyState = document.getElementById('clearancesEmptyState');
+        const countBadge = document.getElementById('badgePendingCount');
+        const totalCount = document.getElementById('clearancesTotalCount');
+
+        if (countBadge) countBadge.textContent = AdminState.pendingApplicants.length;
+        if (totalCount) totalCount.textContent = AdminState.pendingApplicants.length;
+
+        if (AdminState.pendingApplicants.length === 0) {
+          if (grid) grid.innerHTML = '';
+          if (emptyState) emptyState.classList.remove('hidden');
+          return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+        if (!grid) return;
+
+        grid.innerHTML = AdminState.pendingApplicants.map(app => `
+          <div class="bg-white border-4 border-black p-5 brutal-shadow flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center justify-between border-b-2 border-black pb-2 mb-3">
+                <span class="bg-vividyellow border border-black px-2 py-0.5 text-[10px] font-black uppercase">
+                  ${app.role}
+                </span>
+                <span class="text-[10px] font-bold text-gray-600 font-mono">
+                  ${app.submittedAt}
+                </span>
+              </div>
+              
+              <div class="space-y-1">
+                <h4 class="font-black text-lg uppercase tracking-tight text-black">${escapeHtml(app.name)}</h4>
+                <p class="text-xs font-bold text-gray-800">🏛️ ${escapeHtml(app.college)}</p>
+                <p class="text-[11px] font-bold text-gray-600">📚 Dept: ${escapeHtml(app.dept)}</p>
+                <p class="text-[11px] font-bold text-gray-600 font-mono">🆔 Roll / ID: ${escapeHtml(app.rollNo)}</p>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t-2 border-black">
+              <button 
+                type="button" 
+                onclick="inspectApplicantId('${app.id}')"
+                class="w-full bg-cream hover:bg-yellow-100 text-black border-2 border-black py-2 font-black text-xs uppercase tracking-wider brutal-btn flex items-center justify-center gap-1"
+              >
+                <span>🔍 VIEW UPLOADED ID</span>
+              </button>
+
+              <div class="flex gap-2">
+                <button 
+                  type="button" 
+                  onclick="approveApplicant('${app.id}')"
+                  class="flex-1 bg-neongreen hover:bg-emerald-400 text-black border-4 border-black py-2.5 font-black text-xs uppercase tracking-wider brutal-shadow-sm brutal-btn"
+                >
+                  ✓ APPROVE &amp; GENERATE ID
+                </button>
+                <button 
+                  type="button" 
+                  onclick="rejectApplicant('${app.id}')"
+                  class="bg-hotred hover:bg-red-600 text-white border-4 border-black px-3 py-2.5 font-black text-xs uppercase brutal-shadow-sm brutal-btn"
+                >
+                  REJECT
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function inspectApplicantId(appId) {
+        const applicant = AdminState.pendingApplicants.find(a => a.id === appId);
+        if (!applicant) return;
+        AdminState.selectedApplicant = applicant;
+
+        document.getElementById('idModalApplicantName').textContent = `${applicant.name} (${applicant.role})`;
+        document.getElementById('idModalName').textContent = applicant.name;
+        document.getElementById('idModalRoll').textContent = applicant.rollNo;
+        document.getElementById('idModalCollege').textContent = applicant.college;
+        document.getElementById('idModalRole').textContent = applicant.role;
+        document.getElementById('idModalDate').textContent = applicant.submittedAt;
+
+        openModal('modalViewId');
+      }
+
+      function generateNextAuraId() {
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        return `aura${randomNum}`;
+      }
+
+      function approveApplicant(appId) {
+        const index = AdminState.pendingApplicants.findIndex(a => a.id === appId);
+        if (index === -1) return;
+        const applicant = AdminState.pendingApplicants[index];
+        const newAuraId = generateNextAuraId();
+
+        // Add to Directory
+        AdminState.directory.unshift({
+          auraId: newAuraId,
+          name: applicant.name,
+          role: applicant.role.toUpperCase().includes('FACULTY') ? 'FACULTY' : 'STUDENT',
+          college: applicant.college,
+          status: 'ACTIVE',
+          isAdmin: false
+        });
+
+        // Remove from Pending
+        AdminState.pendingApplicants.splice(index, 1);
+        saveState();
+        renderPendingQueue();
+
+        alert(`✓ CLEARANCE GRANTED!\n\nCandidate: ${applicant.name}\nAssigned Unique AURA ID: ${newAuraId}\nStatus: Active on Campus P2P Mesh.`);
+      }
+
+      function rejectApplicant(appId) {
+        const applicant = AdminState.pendingApplicants.find(a => a.id === appId);
+        if (!applicant) return;
+        if (!confirm(`Are you sure you want to REJECT ${applicant.name}'s clearance application?`)) return;
+
+        AdminState.pendingApplicants = AdminState.pendingApplicants.filter(a => a.id !== appId);
+        saveState();
+        renderPendingQueue();
+      }
+
+      function approveFromModal() {
+        if (!AdminState.selectedApplicant) return;
+        approveApplicant(AdminState.selectedApplicant.id);
+        closeModal('modalViewId');
+      }
+
+      function rejectFromModal() {
+        if (!AdminState.selectedApplicant) return;
+        rejectApplicant(AdminState.selectedApplicant.id);
+        closeModal('modalViewId');
+      }
+
+      function approveAllPending() {
+        if (AdminState.pendingApplicants.length === 0) return;
+        if (!confirm(`Approve and generate AURA IDs for all ${AdminState.pendingApplicants.length} applicants?`)) return;
+
+        AdminState.pendingApplicants.forEach(app => {
+          const newAuraId = generateNextAuraId();
+          AdminState.directory.unshift({
+            auraId: newAuraId,
+            name: app.name,
+            role: app.role.toUpperCase().includes('FACULTY') ? 'FACULTY' : 'STUDENT',
+            college: app.college,
+            status: 'ACTIVE',
+            isAdmin: false
+          });
+        });
+
+        AdminState.pendingApplicants = [];
+        saveState();
+        renderPendingQueue();
+        alert("✓ Batch Approval Completed! All users enrolled.");
+      }
+
+      function resetDemoQueue() {
+        AdminState.pendingApplicants = JSON.parse(JSON.stringify(DEFAULT_PENDING_APPLICANTS));
+        saveState();
+        renderPendingQueue();
+      }
+
+      function simulateAddQueueItem() {
+        const names = ['Rohan Das', 'Pooja Verma', 'Subhashish Bose', 'Sneha Roy', 'Vikramaditya Rao'];
+        const colleges = ['Rahul Engineering College', 'Rahul Institute of Pharmacy', 'Rahul Science Institute'];
+        const chosenName = names[Math.floor(Math.random() * names.length)];
+        const chosenCollege = colleges[Math.floor(Math.random() * colleges.length)];
+        const newApp = {
+          id: `app_${Date.now()}`,
+          name: chosenName,
+          rollNo: `RFC-2025-${Math.floor(1000 + Math.random() * 8999)}`,
+          role: 'Student (B.Tech)',
+          college: chosenCollege,
+          dept: 'Computer Science',
+          submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+          cardId: `ID-NEW-${Math.floor(100 + Math.random() * 900)}`
+        };
+        AdminState.pendingApplicants.push(newApp);
+        saveState();
+        renderPendingQueue();
+        alert(`+ Simulated new applicant added: ${chosenName}`);
+      }
+
+      // =======================================================================
+      // VIEW 2: USER & ADMIN DIRECTORY
+      // =======================================================================
+      function renderDirectoryTable() {
+        const tbody = document.getElementById('directoryTableBody');
+        if (!tbody) return;
+
+        const searchTerm = (document.getElementById('directorySearch')?.value || '').toLowerCase().trim();
+        const roleFilter = (document.getElementById('directoryRoleFilter')?.value || 'ALL');
+
+        const filtered = AdminState.directory.filter(user => {
+          const matchesSearch = user.auraId.toLowerCase().includes(searchTerm) || 
+                                user.name.toLowerCase().includes(searchTerm) || 
+                                user.college.toLowerCase().includes(searchTerm);
+          if (!matchesSearch) return false;
+          if (roleFilter === 'ALL') return true;
+          if (roleFilter === 'BANNED') return user.status === 'BANNED';
+          if (roleFilter === 'ADMIN') return user.isAdmin;
+          return user.role.toUpperCase() === roleFilter;
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="p-6 text-center text-gray-600 font-bold">
+                No matching records found in campus directory.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(user => {
+          const isBanned = user.status === 'BANNED';
+          const isAdmin = user.isAdmin;
+
+          return `
+            <tr class="hover:bg-cream/80 transition-colors ${isBanned ? 'bg-red-50 text-red-900' : ''}">
+              <td class="border-2 border-black p-3 font-mono font-black ${isAdmin ? 'text-hotred' : 'text-black'}">
+                ${user.auraId}
+              </td>
+              <td class="border-2 border-black p-3 font-black">
+                ${escapeHtml(user.name)}
+              </td>
+              <td class="border-2 border-black p-3">
+                <span class="inline-block px-2 py-0.5 text-[10px] font-black uppercase border border-black ${isAdmin ? 'bg-hotred text-white' : (user.role === 'FACULTY' ? 'bg-softviolet text-black' : 'bg-vividyellow text-black')}">
+                  ${user.role}
+                </span>
+              </td>
+              <td class="border-2 border-black p-3 text-gray-800">
+                ${escapeHtml(user.college)}
+              </td>
+              <td class="border-2 border-black p-3 text-center">
+                <span class="inline-block px-2 py-0.5 text-[10px] font-black uppercase border border-black ${isBanned ? 'bg-black text-white' : 'bg-neongreen text-black'}">
+                  ${user.status}
+                </span>
+              </td>
+              <td class="border-2 border-black p-3 text-right">
+                ${isAdmin ? `
+                  <span class="text-[10px] font-black text-gray-500 uppercase">ROOT PROTECTED</span>
+                ` : `
+                  <button 
+                    type="button"
+                    onclick="toggleUserBan('${user.auraId}')" 
+                    class="px-2.5 py-1 text-[11px] font-black uppercase border-2 border-black brutal-btn ${isBanned ? 'bg-neongreen text-black' : 'bg-hotred text-white hover:bg-black'}"
+                  >
+                    ${isBanned ? 'UNBAN USER' : 'BAN USER'}
+                  </button>
+                `}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function filterDirectoryTable() {
+        renderDirectoryTable();
+      }
+
+      function toggleUserBan(auraId) {
+        const user = AdminState.directory.find(u => u.auraId === auraId);
+        if (!user) return;
+
+        if (user.status === 'ACTIVE') {
+          if (!confirm(`Are you sure you want to enforce a PERMANENT ZERO-TOLERANCE BAN on ${user.name} (${user.auraId})?`)) return;
+          user.status = 'BANNED';
+          // Log ban into reports
+          AdminState.reports.unshift({
+            id: `ban_${Date.now()}`,
+            reporterId: 'AURA-SYS-ADMIN',
+            reportedId: user.auraId,
+            category: 'ADMIN ZERO-TOLERANCE BAN',
+            reason: `Manually banned by executive administrator ${AdminState.activeAdmin}. Disciplinary committee notified.`,
+            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC'
+          });
+        } else {
+          user.status = 'ACTIVE';
+        }
+
+        saveState();
+        renderDirectoryTable();
+      }
+
+      function handleManualAddUser(e) {
+        e.preventDefault();
+        const name = document.getElementById('addUserName').value.trim();
+        const college = document.getElementById('addUserCollege').value.trim();
+        const role = document.getElementById('addUserRole').value.trim();
+        let customId = document.getElementById('addUserCustomId').value.trim();
+
+        if (!customId) {
+          customId = generateNextAuraId();
+        }
+
+        AdminState.directory.unshift({
+          auraId: customId,
+          name: name,
+          role: role.toUpperCase(),
+          college: college,
+          status: 'ACTIVE',
+          isAdmin: false
+        });
+
+        saveState();
+        closeModal('modalAddUser');
+        renderDirectoryTable();
+        alert(`✓ User Created!\nAURA ID: ${customId}\nName: ${name}`);
+      }
+
+      function handleManualAddAdmin(e) {
+        e.preventDefault();
+        const username = document.getElementById('addAdminUsername').value.trim().toUpperCase();
+        const name = document.getElementById('addAdminName').value.trim();
+        const level = document.getElementById('addAdminLevel').value;
+
+        if (!username.startsWith('AURA-SYS-')) {
+          alert('ERROR: Admin usernames must start with "AURA-SYS-" (e.g. AURA-SYS-ROHIT)');
+          return;
+        }
+
+        AdminState.directory.unshift({
+          auraId: username,
+          name: name,
+          role: 'ADMIN',
+          college: `vXr / ${level}`,
+          status: 'ACTIVE',
+          isAdmin: true
+        });
+
+        saveState();
+        closeModal('modalAddAdmin');
+        renderDirectoryTable();
+        alert(`⚡ NEW ADMINISTRATOR PROVISIONED!\nUsername: ${username}\nClearance: ${level}`);
+      }
+
+      // =======================================================================
+      // VIEW 3: SOCIETY NOTICEBOARD
+      // =======================================================================
+      function renderBroadcasts() {
+        const list = document.getElementById('publishedBroadcastsList');
+        if (!list) return;
+
+        if (AdminState.broadcasts.length === 0) {
+          list.innerHTML = `
+            <div class="bg-white border-2 border-black p-4 text-center text-xs font-bold text-gray-600">
+              No live broadcasts currently published.
+            </div>
+          `;
+          return;
+        }
+
+        list.innerHTML = AdminState.broadcasts.map(b => `
+          <div class="bg-white border-4 border-black p-4 brutal-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="bg-black text-white text-[10px] font-black uppercase px-2 py-0.5">
+                  ${b.type}
+                </span>
+                <span class="text-[10px] font-bold text-gray-600">
+                  Target: ${b.audience} | ${b.timestamp}
+                </span>
+              </div>
+              <h4 class="font-black text-sm uppercase text-black">${escapeHtml(b.title)}</h4>
+              <p class="text-xs font-bold text-gray-800">${escapeHtml(b.content)}</p>
+              <span class="text-[10px] font-mono text-gray-500 block">Signed: ${escapeHtml(b.author)}</span>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="retractBroadcast('${b.id}')" 
+              class="bg-hotred hover:bg-black text-white border-2 border-black px-3 py-1.5 text-xs font-black uppercase brutal-btn shrink-0"
+            >
+              RETRACT BROADCAST
+            </button>
+          </div>
+        `).join('');
+      }
+
+      function publishLiveBroadcast() {
+        const type = document.getElementById('broadcastType').value;
+        const audience = document.getElementById('broadcastAudience').value;
+        const author = document.getElementById('broadcastAuthor').value.trim() || 'ADMIN VISHU RAJ';
+        const title = document.getElementById('broadcastTitle').value.trim();
+        const content = document.getElementById('broadcastContent').value.trim();
+        const pinned = document.getElementById('broadcastPin').checked;
+
+        if (!title || !content) {
+          alert('Please provide both a headline and broadcast body.');
+          return;
+        }
+
+        const newBroadcast = {
+          id: `bc_${Date.now()}`,
+          type: type,
+          audience: audience,
+          title: title,
+          content: content,
+          author: author,
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC',
+          pinned: pinned
+        };
+
+        AdminState.broadcasts.unshift(newBroadcast);
+        saveState();
+        renderBroadcasts();
+
+        // Clear Form
+        document.getElementById('broadcastTitle').value = '';
+        document.getElementById('broadcastContent').value = '';
+
+        alert(`✓ BROADCAST PUSHED TO NETWORK!\nHeadline: ${title}\nAudience: ${audience}`);
+      }
+
+      function retractBroadcast(id) {
+        if (!confirm('Retract this broadcast from active user screens?')) return;
+        AdminState.broadcasts = AdminState.broadcasts.filter(b => b.id !== id);
+        saveState();
+        renderBroadcasts();
+      }
+
+      // =======================================================================
+      // VIEW 4: MODERATION (REPORTS & BLOCK LOGS)
+      // =======================================================================
+      function renderModerationLogs() {
+        // Section A: Reports
+        const reportsTbody = document.getElementById('reportsTableBody');
+        const repCount = document.getElementById('badgeReportsCount');
+        if (repCount) repCount.textContent = AdminState.reports.length;
+
+        if (reportsTbody) {
+          if (AdminState.reports.length === 0) {
+            reportsTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-600 font-bold">No outstanding disciplinary complaints.</td></tr>`;
+          } else {
+            reportsTbody.innerHTML = AdminState.reports.map(rep => `
+              <tr class="hover:bg-red-50">
+                <td class="border-2 border-black p-3 font-mono font-bold">${rep.reporterId}</td>
+                <td class="border-2 border-black p-3 font-mono font-black text-hotred">${rep.reportedId}</td>
+                <td class="border-2 border-black p-3"><span class="bg-black text-white px-1.5 py-0.5 text-[10px] font-black uppercase">${rep.category}</span></td>
+                <td class="border-2 border-black p-3 text-gray-900">${escapeHtml(rep.reason)}</td>
+                <td class="border-2 border-black p-3 text-right">
+                  <button onclick="banOffender('${rep.reportedId}', '${rep.id}')" class="bg-hotred hover:bg-black text-white border-2 border-black px-3 py-1 font-black text-xs uppercase brutal-btn">
+                    BAN OFFENDER
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+
+        // Section B: Block Logs
+        const blockTbody = document.getElementById('blockLogsTableBody');
+        if (blockTbody) {
+          if (AdminState.blockLogs.length === 0) {
+            blockTbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-600 font-bold">No peer blocks logged yet.</td></tr>`;
+          } else {
+            blockTbody.innerHTML = AdminState.blockLogs.map(blk => `
+              <tr class="hover:bg-yellow-50">
+                <td class="border-2 border-black p-3 font-mono text-gray-600">${blk.timestamp}</td>
+                <td class="border-2 border-black p-3 font-mono font-bold">${blk.blockerId}</td>
+                <td class="border-2 border-black p-3 font-mono font-black text-hotred">${blk.blockedId}</td>
+                <td class="border-2 border-black p-3 font-bold text-black bg-cream/50">
+                  "${escapeHtml(blk.reason || 'No reason provided')}"
+                </td>
+                <td class="border-2 border-black p-3 text-right">
+                  <span class="inline-block bg-black text-white text-[10px] font-black px-2 py-0.5 uppercase">
+                    PEER ISOLATED
+                  </span>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+      }
+
+      function banOffender(offenderId, reportId) {
+        if (!confirm(`BAN target entity ${offenderId} immediately under zero-tolerance campus bylaws?`)) return;
+
+        const target = AdminState.directory.find(u => u.auraId === offenderId);
+        if (target) {
+          target.status = 'BANNED';
+        }
+
+        AdminState.reports = AdminState.reports.filter(r => r.id !== reportId);
+        saveState();
+        renderModerationLogs();
+        renderDirectoryTable();
+        alert(`⛔ Entity ${offenderId} has been permanently banned from Aura.`);
+      }
+
+      // =======================================================================
+      // MODAL HELPER FUNCTIONS
+      // =======================================================================
+      function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
+      }
+
+      function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      }
+
+      function handleDemoBlockSubmit(e) {
+        e.preventDefault();
+        const reason = document.getElementById('demoBlockReason').value.trim() || 'No explicit reason specified';
+        
+        // Push to Admin State block logs
+        AdminState.blockLogs.unshift({
+          id: `blk_${Date.now()}`,
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+          blockerId: 'aura0045 (You)',
+          blockedId: 'aura0102',
+          reason: reason
+        });
+        saveState();
+        closeModal('userBlockModalDemo');
+        alert(`✓ Partner aura0102 blocked successfully!\nReason recorded: "${reason}"`);
+        renderModerationLogs();
+      }
+
+      function copySnippetCode() {
+        const code = document.getElementById('snippetCodeBlock').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+          const btn = document.getElementById('copyCodeBtn');
+          btn.textContent = '✓ COPIED!';
+          btn.classList.add('bg-neongreen');
+          setTimeout(() => {
+            btn.textContent = 'COPY SNIPPET';
+            btn.classList.remove('bg-neongreen');
+          }, 2000);
+        });
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // System Live Clock
+      function startClock() {
+        setInterval(() => {
+          const now = new Date();
+          const clockEl = document.getElementById('systemClock');
+          if (clockEl) {
+            clockEl.textContent = now.toUTCString().split(' ')[4] + ' UTC';
+          }
+        }, 1000);
+      }
+
+      // =======================================================================
+      // INITIALIZATION
+      // =======================================================================
+      window.addEventListener('DOMContentLoaded', () => {
+        startClock();
+        switchAdminView('clearances');
+      });
+    </script>
+  </body>
+</html>
