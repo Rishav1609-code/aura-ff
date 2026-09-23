@@ -119,7 +119,7 @@
 4. Expand the **Environment Variables** section and add all required keys (see Section 5).
 5. Click **Create Web Service**.
 6. Wait 2–3 minutes for the build to complete. Note your backend URL:  
-   `https://aura-backend-api.onrender.com`
+   `https://aura-cv49.onrender.com`
 
 ---
 
@@ -135,7 +135,7 @@
    ```javascript
    const AURA_BACKEND_URL = (window.AURA_CONFIG && window.AURA_CONFIG.BACKEND_URL) 
      || localStorage.getItem('aura_backend_url') 
-     || 'https://aura-backend-api.onrender.com';
+     || 'https://aura-cv49.onrender.com';
    ```
 5. Click **Deploy**.
 6. Your application will be live globally on a custom URL (e.g., `https://aura-society.vercel.app`).

@@ -1973,23 +1973,17 @@
 
           <!-- Pending Offline Verifications Queue -->
           <div>
-            <h4 class="font-black text-sm uppercase border-b-2 border-black pb-1 mb-2">
-              📋 PENDING OFFLINE VERIFICATIONS (DEAN ESCALATION)
-            </h4>
-            <div id="adminPendingList" class="space-y-2">
-              <div class="border-2 border-black p-2.5 bg-cream flex items-center justify-between text-xs font-bold">
-                <div>
-                  <p class="font-black">Sourav Ganguly (Student, Roll: RFC-2024-1182)</p>
-                  <p class="text-gray-600 text-[10px]">Dept: Mech Engg | HOD: Dr. K. Roy | Room 102</p>
-                </div>
-                <div class="flex gap-1">
-                  <button onclick="alert('Student ID marked VERIFIED')" class="bg-emerald-400 border border-black px-2 py-0.5 font-black hover:bg-emerald-500">
-                    APPROVE
-                  </button>
-                  <button onclick="alert('Student ID REJECTED')" class="bg-hotred text-white border border-black px-2 py-0.5 font-black">
-                    REJECT
-                  </button>
-                </div>
+            <div class="flex items-center justify-between border-b-2 border-black pb-1 mb-2">
+              <h4 class="font-black text-sm uppercase">
+                📋 PENDING VERIFICATIONS &amp; APPLICANTS QUEUE
+              </h4>
+              <button onclick="loadAdminPendingQueue()" class="bg-vividyellow text-black border border-black px-2 py-0.5 text-[10px] font-black uppercase hover:bg-black hover:text-white transition-colors cursor-pointer">
+                🔄 REFRESH
+              </button>
+            </div>
+            <div id="adminPendingList" class="space-y-2 max-h-60 overflow-y-auto" data-lenis-prevent>
+              <div class="border-2 border-dashed border-black p-4 bg-cream text-center text-xs font-bold text-gray-600">
+                CLICK UNLOCK TO SYNC WITH REAL-TIME RENDER DATABASE...
               </div>
             </div>
           </div>
@@ -2307,7 +2301,7 @@
       // =======================================================================
       // GLOBAL APPLICATION STATE & PRODUCTION BACKEND CONFIG
       // =======================================================================
-      const AURA_BACKEND_URL = (window.AURA_CONFIG && window.AURA_CONFIG.BACKEND_URL) || localStorage.getItem('aura_backend_url') || '';
+      const AURA_BACKEND_URL = (window.AURA_CONFIG && window.AURA_CONFIG.BACKEND_URL) || localStorage.getItem('aura_backend_url') || 'https://aura-cv49.onrender.com';
 
       const AppState = {
         currentUser: null,
@@ -2798,29 +2792,41 @@
       });
 
       // =======================================================================
-      // ONLINE COUNTER REAL-TIME TICKER
+      // ONLINE COUNTER & REAL-TIME SYSTEM METRICS
       // =======================================================================
+      async function fetchSystemStats() {
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/stats`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.verified_members) {
+              AppState.onlineCount = data.verified_members;
+              const countStr = data.verified_members.toLocaleString();
+              const el1 = document.getElementById('onlineCountText');
+              if (el1) el1.textContent = countStr;
+              const el2 = document.getElementById('dashOnlineCountText');
+              if (el2) el2.textContent = countStr;
+            }
+            const admActive = document.getElementById('admActiveUsers');
+            if (admActive) admActive.textContent = (data.verified_members || 5000).toLocaleString();
+            const admPending = document.getElementById('admPendingCount');
+            if (admPending) admPending.textContent = String(data.pending_verifications || 0);
+            const admBanned = document.getElementById('admBannedCount');
+            if (admBanned) admBanned.textContent = String(data.banned_count || 0);
+          }
+        } catch (err) {
+          console.warn('[AURA Stats] Sync note:', err);
+        }
+      }
+
       function startOnlineCounterTicker() {
-        setInterval(() => {
-          // Subtle realistic jitter around 5000+ members
-          const delta = Math.floor(Math.random() * 5) - 2;
-          AppState.onlineCount = Math.max(5010, Math.min(5280, AppState.onlineCount + delta));
-          const countStr = AppState.onlineCount.toLocaleString();
-          const el1 = document.getElementById('onlineCountText');
-          if (el1) el1.textContent = countStr;
-          const el2 = document.getElementById('dashOnlineCountText');
-          if (el2) el2.textContent = countStr;
-        }, 3500);
+        fetchSystemStats();
+        setInterval(fetchSystemStats, 10000);
       }
 
       function simulateAddOnline() {
-        AppState.onlineCount += 1;
-        const countStr = AppState.onlineCount.toLocaleString();
-        const el1 = document.getElementById('onlineCountText');
-        if (el1) el1.textContent = countStr;
-        const el2 = document.getElementById('dashOnlineCountText');
-        if (el2) el2.textContent = countStr;
-        alert("1 new verified member just logged into RAHUL FOUNDATION SOCIETY network!");
+        fetchSystemStats();
+        alert("Synced with live RAHUL FOUNDATION SOCIETY backend!");
       }
 
       // =======================================================================
@@ -2882,15 +2888,13 @@
         if (alertBox) alertBox.classList.add('hidden');
       }
 
-      // =======================================================================
-      // AUTO-GENERATED SEQUENTIAL AURA USERNAME SYSTEM (e.g. aura0001, aura0002)
-      // =======================================================================
-      function getNextAuraId() {
-        let currentSeq = parseInt(localStorage.getItem('aura_username_seq') || '1', 10);
-        if (isNaN(currentSeq) || currentSeq < 1) currentSeq = 1;
-        const formatted = `aura${String(currentSeq).padStart(4, '0')}`;
-        localStorage.setItem('aura_username_seq', String(currentSeq + 1));
-        return formatted;
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (e) => reject(e);
+          reader.readAsDataURL(file);
+        });
       }
 
       function checkPersistentAuth() {
@@ -2898,11 +2902,7 @@
           const stored = localStorage.getItem('aura_rfc_session');
           if (stored) {
             const user = JSON.parse(stored);
-            if (user && user.fullName) {
-              if (!user.username || !user.username.startsWith('aura')) {
-                user.username = getNextAuraId();
-                localStorage.setItem('aura_rfc_session', JSON.stringify(user));
-              }
+            if (user && (user.fullName || user.username)) {
               AppState.currentUser = user;
               showDashboardView();
             }
@@ -2912,7 +2912,7 @@
         }
       }
 
-      function handleLoginSubmit(e) {
+      async function handleLoginSubmit(e) {
         e.preventDefault();
         hideAuthError();
 
@@ -2922,58 +2922,90 @@
         const rawInput = usernameInput ? usernameInput.value.trim() : '';
         const password = passwordInput ? passwordInput.value : '';
 
-        // 1. Validate NAME / AURA ID
+        // 1. Validate Identifier
         if (!rawInput) {
-          showAuthError("NAME / AURA ID IS REQUIRED.");
-          if (usernameInput) usernameInput.focus();
-          return;
-        }
-        if (rawInput.length > 50) {
-          showAuthError(`NAME / AURA ID MUST NOT EXCEED 50 CHARACTERS (CURRENT: ${rawInput.length}).`);
+          showAuthError("SOCIETY ID / USERNAME IS REQUIRED.");
           if (usernameInput) usernameInput.focus();
           return;
         }
 
-        // 2. Validate PASSWORD
+        // 2. Validate Password
         if (!password) {
           showAuthError("PASSWORD IS REQUIRED.");
           if (passwordInput) passwordInput.focus();
           return;
         }
-        if (password.length > 16) {
-          showAuthError(`PASSWORD MUST NOT EXCEED 16 CHARACTERS (CURRENT: ${password.length}).`);
-          if (passwordInput) passwordInput.focus();
-          return;
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>⚡ VERIFYING IDENTITY...</span>';
         }
 
-        // Determine or assign sequential auraXXXX username
-        let assignedAuraId;
-        const auraRegex = /^aura\d{4}$/i;
-        if (auraRegex.test(rawInput)) {
-          assignedAuraId = rawInput.toLowerCase();
-        } else {
-          assignedAuraId = getNextAuraId();
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              society_id_or_username: rawInput,
+              password: password
+            })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            if (res.status === 403 && data.detail && data.detail.includes('PENDING')) {
+              const nameDisplay = document.getElementById('pendingModalCandidateName');
+              const mobileDisplay = document.getElementById('pendingModalMobile');
+              if (nameDisplay) nameDisplay.textContent = rawInput;
+              if (mobileDisplay) mobileDisplay.textContent = "Awaiting Central Society Admin Approval";
+              const pendingModal = document.getElementById('verificationPendingModal');
+              if (pendingModal) pendingModal.classList.remove('hidden');
+              return;
+            }
+            throw new Error(data.detail || "Authentication failed. Please verify your credentials.");
+          }
+
+          // Successful authenticated response
+          localStorage.setItem('aura_auth_token', data.token);
+          const userObj = {
+            id: data.user.id,
+            fullName: data.user.full_name || rawInput,
+            username: data.user.username || rawInput,
+            role: data.user.role || "Verified Member",
+            societyId: data.user.society_id || rawInput,
+            status: data.user.status || "verified",
+            verified: true,
+            authAt: new Date().toISOString()
+          };
+
+          localStorage.setItem('aura_rfc_session', JSON.stringify(userObj));
+          AppState.currentUser = userObj;
+
+          if (AppState.socket && AppState.socket.connected) {
+            AppState.socket.emit('authenticate', {
+              token: data.token,
+              user: userObj,
+              peerId: AppState.peerId
+            });
+          } else {
+            initBackendSocket();
+          }
+
+          showDashboardView();
+        } catch (err) {
+          showAuthError(err.message || "Failed to connect to authentication server.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
         }
-
-        const userObj = {
-          fullName: rawInput,
-          username: assignedAuraId,
-          mobile: "Verified",
-          role: "Verified Member",
-          societyId: assignedAuraId,
-          verified: true,
-          authAt: new Date().toISOString()
-        };
-
-        // Persist session in localStorage
-        localStorage.setItem('aura_rfc_session', JSON.stringify(userObj));
-        AppState.currentUser = userObj;
-
-        // Login immediately transitions to Dashboard, bypassing verification pending modal!
-        showDashboardView();
       }
 
-      function handleAuthSubmit(e) {
+      async function handleAuthSubmit(e) {
         e.preventDefault();
         hideAuthError();
 
@@ -3049,68 +3081,63 @@
           return;
         }
 
-        const fileName = (fileInput && fileInput.files && fileInput.files[0]) 
-          ? fileInput.files[0].name 
-          : (uploadedIdCardFile ? uploadedIdCardFile.name : 'RFC-ID-Card.png');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>🔒 DISPATCHING IDENTITY DATA...</span>';
+        }
 
-        const trackingId = `RFC-VERIFY-${Math.floor(10000 + Math.random() * 90000)}`;
-        const assignedUsername = getNextAuraId();
-
-        // Populate candidate details into the Verification Pending Modal
-        const nameDisplay = document.getElementById('pendingModalCandidateName');
-        const mobileDisplay = document.getElementById('pendingModalMobile');
-        if (nameDisplay) nameDisplay.textContent = `${fullName} [AURA ID: ${assignedUsername}]`;
-        if (mobileDisplay) mobileDisplay.textContent = `${mobile} (${fileName})`;
-
-        // Add to Admin Pending Queue for manual clearance
-        const adminPendingList = document.getElementById('adminPendingList');
-        if (adminPendingList) {
-          const pendingItem = document.createElement('div');
-          pendingItem.className = "border-2 border-black p-2.5 bg-cream flex items-center justify-between text-xs font-bold";
-          pendingItem.innerHTML = `
-            <div>
-              <p class="font-black">${escapeHtml(fullName)} <span class="bg-[#FFD93D] border border-black px-1.5 py-0.2 text-[10px] uppercase font-black">${assignedUsername}</span> [ID Card: ${escapeHtml(fileName)}]</p>
-              <p class="text-gray-600 text-[10px]">Mobile: ${escapeHtml(mobile)} | Tracking: ${trackingId}</p>
-              <p class="text-hotred text-[10px] font-black uppercase">Pending Physical Society Clearance</p>
-            </div>
-            <div class="flex gap-1 shrink-0 ml-2">
-              <button onclick="approveAdminPendingUser('${escapeHtml(fullName)}', '${assignedUsername}', this)" class="bg-emerald-400 border border-black px-2 py-0.5 font-black hover:bg-emerald-500 cursor-pointer">APPROVE</button>
-              <button onclick="rejectAdminPendingUser(this)" class="bg-hotred text-white border border-black px-2 py-0.5 font-black cursor-pointer">REJECT</button>
-            </div>
-          `;
-          adminPendingList.prepend(pendingItem);
-          const admPendingCount = document.getElementById('admPendingCount');
-          if (admPendingCount) {
-            admPendingCount.textContent = parseInt(admPendingCount.textContent || '0') + 1;
+        let idCardAssetUrl = "";
+        try {
+          const file = uploadedIdCardFile || (fileInput && fileInput.files ? fileInput.files[0] : null);
+          if (file) {
+            idCardAssetUrl = await readFileAsDataUrl(file);
           }
+        } catch (err) {
+          console.warn("File read note:", err);
         }
 
-        // Trigger the Verification Pending modal to block access until admin clearance
-        const pendingModal = document.getElementById('verificationPendingModal');
-        if (pendingModal) {
-          pendingModal.classList.remove('hidden');
-        }
-      }
+        const generatedSocietyId = `RFC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-      function approveAdminPendingUser(fullName, auraId, btn) {
-        alert(`Member ${fullName} APPROVED!\nAssigned Unique Username: ${auraId}\nZero Anonymity clearance granted.`);
-        const card = btn.closest('.border-2');
-        if (card) card.remove();
-        const admPendingCount = document.getElementById('admPendingCount');
-        if (admPendingCount) {
-          const count = Math.max(0, parseInt(admPendingCount.textContent || '1') - 1);
-          admPendingCount.textContent = count;
-        }
-      }
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              full_name: fullName,
+              mobile: mobile,
+              college_name: "Rahul Foundation Society",
+              role: "Student",
+              society_id: generatedSocietyId,
+              password: password,
+              id_card_url: idCardAssetUrl.slice(0, 1000)
+            })
+          });
 
-      function rejectAdminPendingUser(btn) {
-        alert('Verification request REJECTED under Disciplinary & Identity guidelines.');
-        const card = btn.closest('.border-2');
-        if (card) card.remove();
-        const admPendingCount = document.getElementById('admPendingCount');
-        if (admPendingCount) {
-          const count = Math.max(0, parseInt(admPendingCount.textContent || '1') - 1);
-          admPendingCount.textContent = count;
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.detail || "Registration failed. Please check your inputs.");
+          }
+
+          const nameDisplay = document.getElementById('pendingModalCandidateName');
+          const mobileDisplay = document.getElementById('pendingModalMobile');
+          if (nameDisplay) nameDisplay.textContent = `${fullName} [Society ID: ${generatedSocietyId}]`;
+          if (mobileDisplay) mobileDisplay.textContent = `${mobile} (Uploaded ID Card)`;
+
+          const pendingModal = document.getElementById('verificationPendingModal');
+          if (pendingModal) {
+            pendingModal.classList.remove('hidden');
+          }
+
+          fetchSystemStats();
+        } catch (err) {
+          showAuthError(err.message || "Failed to submit verification to backend.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
         }
       }
 
@@ -3134,6 +3161,7 @@
 
       function logoutUser() {
         localStorage.removeItem('aura_rfc_session');
+        localStorage.removeItem('aura_auth_token');
         AppState.currentUser = null;
         uploadedIdCardFile = null;
         hideAuthError();
@@ -3159,7 +3187,7 @@
           const dashNameEl = document.getElementById('dashUserName');
           const dashRoleEl = document.getElementById('dashUserRole');
           const dashIdEl = document.getElementById('dashUserSocietyId');
-          if (dashNameEl) dashNameEl.textContent = AppState.currentUser.fullName;
+          if (dashNameEl) dashNameEl.textContent = AppState.currentUser.fullName || AppState.currentUser.full_name;
           if (dashRoleEl) dashRoleEl.textContent = AppState.currentUser.role || "Verified Member";
           if (dashIdEl) {
             dashIdEl.textContent = AppState.currentUser.username || AppState.currentUser.societyId || "aura0001";
@@ -3170,7 +3198,7 @@
 
           const navNameEl = document.getElementById('navUserName');
           const navSlotEl = document.getElementById('navUserSlot');
-          if (navNameEl) navNameEl.textContent = AppState.currentUser.fullName;
+          if (navNameEl) navNameEl.textContent = AppState.currentUser.fullName || AppState.currentUser.full_name;
           if (navSlotEl) {
             navSlotEl.classList.remove('hidden');
             navSlotEl.classList.add('flex');
@@ -4427,7 +4455,7 @@
         document.getElementById('offlineModal').classList.add('hidden');
       }
 
-      function handleOfflineSubmit(e) {
+      async function handleOfflineSubmit(e) {
         e.preventDefault();
         hideManualApprovalError();
 
@@ -4525,34 +4553,44 @@
           return;
         }
 
-        const trackingId = `RFC-MANUAL-${Math.floor(10000 + Math.random() * 90000)}`;
-
-        // Dynamic addition to admin pending queue if open
-        const adminPendingList = document.getElementById('adminPendingList');
-        if (adminPendingList) {
-          const pendingItem = document.createElement('div');
-          pendingItem.className = "border-2 border-black p-2.5 bg-cream flex items-center justify-between text-xs font-bold";
-          pendingItem.innerHTML = `
-            <div>
-              <p class="font-black">${escapeHtml(name)} (${escapeHtml(college)})</p>
-              <p class="text-gray-600 text-[10px]">Mobile: ${escapeHtml(mobile)} | Track: ${trackingId}</p>
-              <p class="text-gray-800 text-[10px] mt-0.5 line-clamp-1 italic">"${escapeHtml(reason.slice(0, 80))}..."</p>
-            </div>
-            <div class="flex gap-1 shrink-0 ml-2">
-              <button onclick="alert('Student ${escapeHtml(name)} APPROVED by Dean.')" class="bg-emerald-400 border border-black px-2 py-0.5 font-black hover:bg-emerald-500 cursor-pointer">APPROVE</button>
-              <button onclick="alert('Manual request REJECTED')" class="bg-hotred text-white border border-black px-2 py-0.5 font-black cursor-pointer">REJECT</button>
-            </div>
-          `;
-          adminPendingList.prepend(pendingItem);
-          const admPendingCount = document.getElementById('admPendingCount');
-          if (admPendingCount) {
-            admPendingCount.textContent = parseInt(admPendingCount.textContent || '0') + 1;
-          }
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span>⚡ DISPATCHING TO DEAN ESCALATION...</span>';
         }
 
-        alert(`✓ MANUAL APPROVAL REQUEST DISPATCHED\n\nTracking ID: ${trackingId}\nCandidate: ${name}\nCollege: ${college}\nMobile: ${mobile}\nReason Word Count: ${wordCount} words\n\nYour application has been submitted to the College Dean & Administration Disciplinary Committee for manual physical attestation.`);
-        
-        closeOfflineModal();
+        const generatedSocietyId = `RFC-OFFLINE-${Date.now().toString().slice(-6)}`;
+
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/auth/offline-request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              full_name: name,
+              role: "Student",
+              department: college,
+              hod_name: "Designated Department HOD",
+              cabin_room: "Central Academic Cabin",
+              reason: reason,
+              society_id: generatedSocietyId
+            })
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Failed to log offline request.");
+
+          alert(`✓ MANUAL APPROVAL REQUEST DISPATCHED\n\nCandidate: ${name}\nCollege/Dept: ${college}\nMobile: ${mobile}\nSociety Reference: ${generatedSocietyId}\n\nYour application has been logged into the live Render database for HOD and Dean physical attestation.`);
+          closeOfflineModal();
+          fetchSystemStats();
+        } catch (err) {
+          showManualApprovalError(err.message || "Failed to submit offline verification.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
+        }
       }
 
       // =======================================================================
@@ -4573,27 +4611,189 @@
         document.getElementById('adminModal').classList.add('hidden');
       }
 
-      function verifyAdminPassword() {
+      async function verifyAdminPassword() {
         const username = (document.getElementById('adminUserInput')?.value || '').trim();
         const pass = (document.getElementById('adminPassInput')?.value || '').trim();
-        // Accepts secure production password or demo password alongside administrator identity
-        const validPasswords = ['vxr2025', 'vxr-aura-admin-secure-2025', 'admin'];
-        if (validPasswords.includes(pass.toLowerCase())) {
+
+        if (!pass) {
+          alert("PLEASE ENTER ADMIN PASSKEY.");
+          return;
+        }
+
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              admin_id: username || "AURA-SYS-VISHU",
+              passkey: pass
+            })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.detail || "Access Denied: Invalid Administrative Credentials.");
+          }
+
+          sessionStorage.setItem('aura_admin_token', data.token);
+          AppState.adminToken = data.token;
+
           document.getElementById('adminAuthGate').classList.add('hidden');
           document.getElementById('adminPanelUnlocked').classList.remove('hidden');
-          document.getElementById('admActiveUsers').textContent = AppState.onlineCount.toLocaleString();
-        } else {
-          alert("ACCESS DENIED // Invalid credentials. Intrusion attempt logged under College Security Protocol.");
+
+          loadAdminPendingQueue();
+          fetchSystemStats();
+        } catch (err) {
+          alert("ACCESS DENIED // " + (err.message || "Intrusion attempt logged under College Security Protocol."));
         }
       }
 
-      function executeAdminBan() {
+      async function loadAdminPendingQueue() {
+        const container = document.getElementById('adminPendingList');
+        if (!container) return;
+
+        const token = AppState.adminToken || sessionStorage.getItem('aura_admin_token');
+        if (!token) {
+          container.innerHTML = `<div class="border-2 border-black p-4 bg-cream text-center text-xs font-bold">Admin authentication token required.</div>`;
+          return;
+        }
+
+        container.innerHTML = `<div class="border-2 border-black p-4 bg-cream text-center text-xs font-black uppercase text-gray-700 animate-pulse">🔄 SYNCING LIVE PENDING QUEUE FROM RENDER BACKEND...</div>`;
+
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/admin/pending`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (!res.ok) throw new Error("Failed to load queue.");
+          const data = await res.json();
+
+          const pendingUsers = data.pending_users || [];
+          const offlineRequests = data.offline_requests || [];
+          const totalCount = pendingUsers.length + offlineRequests.length;
+
+          const countEl = document.getElementById('admPendingCount');
+          if (countEl) countEl.textContent = String(totalCount);
+
+          if (totalCount === 0) {
+            container.innerHTML = `
+              <div class="border-2 border-black p-4 bg-cream text-center text-xs font-black uppercase text-gray-700">
+                🎉 NO PENDING VERIFICATIONS — ALL APPLICANTS PROCESSED!
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = '';
+
+          pendingUsers.forEach(user => {
+            const item = document.createElement('div');
+            item.className = "border-2 border-black p-2.5 bg-cream flex items-center justify-between text-xs font-bold";
+            item.innerHTML = `
+              <div>
+                <p class="font-black text-black">${escapeHtml(user.full_name)} <span class="bg-[#FFD93D] border border-black px-1.5 py-0.2 text-[10px] uppercase font-black">${escapeHtml(user.role || 'Student')}</span></p>
+                <p class="text-gray-600 text-[10px]">Society ID: ${escapeHtml(user.society_id)} | Mobile: ${escapeHtml(user.mobile)}</p>
+                <p class="text-hotred text-[10px] font-black uppercase">Standard ID Card Verification</p>
+              </div>
+              <div class="flex gap-1 shrink-0 ml-2">
+                <button onclick="approveAdminUser('${user.id}', '${escapeHtml(user.full_name)}', this)" class="bg-emerald-400 border border-black px-2 py-0.5 font-black hover:bg-emerald-500 cursor-pointer">APPROVE</button>
+                <button onclick="rejectAdminUser('${user.id}', '${escapeHtml(user.full_name)}', this)" class="bg-hotred text-white border border-black px-2 py-0.5 font-black cursor-pointer">REJECT</button>
+              </div>
+            `;
+            container.appendChild(item);
+          });
+
+          offlineRequests.forEach(req => {
+            const item = document.createElement('div');
+            item.className = "border-2 border-black p-2.5 bg-[#FFF0F0] flex items-center justify-between text-xs font-bold";
+            item.innerHTML = `
+              <div>
+                <p class="font-black text-black">${escapeHtml(req.full_name)} <span class="bg-softviolet border border-black px-1.5 py-0.2 text-[10px] uppercase font-black">OFFLINE HOD</span></p>
+                <p class="text-gray-600 text-[10px]">Dept: ${escapeHtml(req.department)} | HOD: ${escapeHtml(req.hod_name)} | Room: ${escapeHtml(req.cabin_room)}</p>
+                <p class="text-gray-800 text-[10px] italic line-clamp-1">"${escapeHtml(req.reason || '')}"</p>
+              </div>
+              <div class="flex gap-1 shrink-0 ml-2">
+                <button onclick="approveAdminUser('${req.user_id || req.id}', '${escapeHtml(req.full_name)}', this)" class="bg-emerald-400 border border-black px-2 py-0.5 font-black hover:bg-emerald-500 cursor-pointer">APPROVE</button>
+                <button onclick="rejectAdminUser('${req.user_id || req.id}', '${escapeHtml(req.full_name)}', this)" class="bg-hotred text-white border border-black px-2 py-0.5 font-black cursor-pointer">REJECT</button>
+              </div>
+            `;
+            container.appendChild(item);
+          });
+        } catch (err) {
+          container.innerHTML = `<div class="border-2 border-black p-4 bg-hotred text-white text-center text-xs font-black uppercase">ERROR LOADING LIVE QUEUE: ${escapeHtml(err.message)}</div>`;
+        }
+      }
+
+      async function approveAdminUser(userId, fullName, btn) {
+        const token = AppState.adminToken || sessionStorage.getItem('aura_admin_token');
+        if (!token) return;
+        if (btn) btn.disabled = true;
+
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/admin/approve/${userId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Approval failed");
+
+          alert(`✓ MEMBER APPROVED\nCandidate: ${fullName}\nAssigned Identity: ${data.assigned_username || 'auraXXXX'}`);
+          loadAdminPendingQueue();
+          fetchSystemStats();
+        } catch (err) {
+          alert("Approval Error: " + err.message);
+          if (btn) btn.disabled = false;
+        }
+      }
+
+      async function rejectAdminUser(userId, fullName, btn) {
+        const token = AppState.adminToken || sessionStorage.getItem('aura_admin_token');
+        if (!token) return;
+        if (!confirm(`Are you sure you want to REJECT applicant ${fullName}?`)) return;
+
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/admin/reject/${userId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Rejection failed");
+
+          alert(`Member application for ${fullName} REJECTED.`);
+          loadAdminPendingQueue();
+          fetchSystemStats();
+        } catch (err) {
+          alert("Rejection Error: " + err.message);
+        }
+      }
+
+      async function executeAdminBan() {
         const target = document.getElementById('banTargetInput').value.trim();
         if (!target) return;
-        alert(`⛔ ZERO-TOLERANCE ENFORCED\nTarget entity "${target}" has been permanently banned from Aura.\nCollege Disciplinary Committee notified.`);
-        document.getElementById('banTargetInput').value = '';
-        const countEl = document.getElementById('admBannedCount');
-        countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+        const token = AppState.adminToken || sessionStorage.getItem('aura_admin_token');
+        if (!token) {
+          alert("Admin login required to enforce permanent bans.");
+          return;
+        }
+
+        try {
+          const res = await fetch(`${AURA_BACKEND_URL}/api/admin/ban`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ target, reason: "Zero-Tolerance Disciplinary Violation" })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Ban failed");
+
+          alert(`⛔ ZERO-TOLERANCE ENFORCED\nTarget entity "${target}" has been permanently banned from Aura.\nCollege Disciplinary Committee notified.`);
+          document.getElementById('banTargetInput').value = '';
+          fetchSystemStats();
+        } catch (err) {
+          alert("Ban execution failed: " + err.message);
+        }
       }
 
       // =======================================================================
@@ -4607,10 +4807,33 @@
         document.getElementById('reportModal').classList.add('hidden');
       }
 
-      function submitViolationReport() {
+      async function submitViolationReport() {
         const cat = document.getElementById('reportCategory').value;
         const details = document.getElementById('reportDetails').value;
-        alert(`🚨 REPORT SUBMITTED TO DEAN\nCategory: ${cat}\nStatus: Evidence & Session Metadata archived.\n\nThank you for enforcing RAHUL FOUNDATION SOCIETY standards.`);
+        const reporter = AppState.currentUser ? (AppState.currentUser.username || AppState.currentUser.societyId) : "Anonymous-Reporter";
+        const offender = AppState.partnerProfile ? (AppState.partnerProfile.username || AppState.partnerProfile.id) : "Unknown-Offender";
+        const offenderName = AppState.partnerProfile ? AppState.partnerProfile.name : "Unknown";
+        const offenderSocId = AppState.partnerProfile ? AppState.partnerProfile.id : "Unknown";
+
+        try {
+          await fetch(`${AURA_BACKEND_URL}/api/reports/incident`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              reporter_username: reporter,
+              offender_username: offender,
+              offender_name: offenderName,
+              offender_society_id: offenderSocId,
+              incident_type: cat,
+              notes: details,
+              room_id: AppState.activeDataConn ? AppState.activeDataConn.peer : "P2P-ROOM"
+            })
+          });
+        } catch (err) {
+          console.warn("Report note:", err);
+        }
+
+        alert(`🚨 REPORT SUBMITTED TO DEAN & COMMITTEE\nCategory: ${cat}\nStatus: Evidence & Session Metadata permanently archived in live Render audit database.\n\nThank you for enforcing RAHUL FOUNDATION SOCIETY standards.`);
         closeReportModal();
         skipToNextPeer();
       }

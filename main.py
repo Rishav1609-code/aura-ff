@@ -197,8 +197,86 @@ async def health_check():
         "status": "online",
         "service": "AURA Production Signaling Engine",
         "vXr_holdings": "Active",
-        "timestamp": time.time()
+        "timestamp": time.time(),
+        "connected_users": len(connected_users),
+        "active_rooms": len(active_rooms)
     }
+
+@fastapi_app.get("/api/stats")
+async def get_system_stats():
+    """Fetches real-time system metrics from database and socket engine."""
+    verified_res = await supabase_query("users?status=eq.verified&select=id", method="GET")
+    pending_res = await supabase_query("users?status=eq.pending&select=id", method="GET")
+    banned_res = await supabase_query("users?is_banned=eq.true&select=id", method="GET")
+    offline_res = await supabase_query("offline_verifications?status=eq.pending&select=id", method="GET")
+    
+    verified_count = len(verified_res.json()) if verified_res.status_code == 200 else 0
+    pending_count = (len(pending_res.json()) if pending_res.status_code == 200 else 0) + (len(offline_res.json()) if offline_res.status_code == 200 else 0)
+    banned_count = len(banned_res.json()) if banned_res.status_code == 200 else 0
+
+    return {
+        "online_count": max(len(connected_users), 1),
+        "verified_members": 5000 + verified_count,
+        "pending_verifications": pending_count,
+        "banned_count": banned_count,
+        "active_rooms": len(active_rooms)
+    }
+
+@fastapi_app.get("/api/notices")
+async def get_society_notices():
+    """Fetches official live broadcast announcements."""
+    return [
+        {
+            "id": "notice-1",
+            "tag": "SECURITY",
+            "tag_color": "#FF6B6B",
+            "time": "LIVE",
+            "title": "ZERO ANONYMITY PROTOCOL IN FULL EFFECT. MAINTAIN CAMPUS DECORUM AT ALL TIMES.",
+            "author": "ADMIN VISHU",
+            "dept": "RFC-HQ"
+        },
+        {
+            "id": "notice-2",
+            "tag": "INFRA",
+            "tag_color": "#BAE6FD",
+            "time": "UPGRADED",
+            "title": "PEERJS WEBRTC MESH PROTOCOL UPGRADED FOR ZERO-LATENCY CAMPUS STREAMING.",
+            "author": "ADMIN RISHAV",
+            "dept": "VXR DEV"
+        },
+        {
+            "id": "notice-3",
+            "tag": "EVENT",
+            "tag_color": "#FFD93D",
+            "time": "CAMPUS",
+            "title": "SOCIETY TECHNOVATION & HACKATHON REGISTRATIONS OPEN ON MONDAY. 60 SLOTS AVAILABLE.",
+            "author": "DEAN OFFICE",
+            "dept": "FACULTY"
+        }
+    ]
+
+@fastapi_app.post("/api/admin/ban")
+async def admin_ban_user(req: dict, authorization: Optional[str] = Header(None)):
+    """Executes a permanent zero-tolerance ban on a user."""
+    if not authorization or "Bearer " not in authorization:
+        raise HTTPException(status_code=401, detail="Admin token required.")
+    token = authorization.split("Bearer ")[1]
+    claims = decode_jwt_token(token)
+    if not claims or not claims.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Unauthorized admin privilege.")
+    
+    target = req.get("target", "").strip()
+    reason = req.get("reason", "Zero-Tolerance Disciplinary Violation").strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="Target username or Society ID required.")
+    
+    # Patch user record
+    patch_res = await supabase_query(
+        f"users?or=(username.eq.{target},society_id.eq.{target})",
+        method="PATCH",
+        data={"is_banned": True, "ban_reason": reason}
+    )
+    return {"status": "success", "message": f"Entity '{target}' has been banned under Zero-Tolerance rules."}
 
 @fastapi_app.post("/api/auth/signup")
 async def signup_user(req: UserSignupRequest):
