@@ -45,7 +45,15 @@ export function useAuraWebRTC() {
       const peer = new Peer(undefined, {
         host: '0.peerjs.com',
         port: 443,
-        secure: true
+        secure: true,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' },
+            // Add a TURN server here for 100% reliability across restrictive networks
+            // { urls: 'turn:your-turn-server.com:3478', username: 'user', credential: 'password' }
+          ]
+        }
       });
       peerRef.current = peer;
 
