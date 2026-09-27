@@ -72,6 +72,8 @@ export function useAuraWebRTC() {
 
     socket.on('matched', (data) => {
       setPartnerProfile(data.partner);
+      setIsMatching(false);
+      setIsConnected(true);
       
       if (data.isInitiator && data.partner && data.partner.peerId) {
         // Wait briefly for peer to be ready

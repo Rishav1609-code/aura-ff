@@ -461,11 +461,24 @@ io.on('connection', (socket) => {
     }
     
     const user_id = claims.sub;
+    
+    // PREVENT RACE CONDITION: Populate memory immediately before any async database calls
+    const clientUser = data.user || {};
+    connected_users[socket.id] = {
+      id: claims.sub,
+      username: clientUser.username,
+      fullName: clientUser.fullName,
+      role: clientUser.role || "Member",
+      societyId: clientUser.societyId,
+      peerId: data.peerId
+    };
+
     if (user_id && user_id !== "admin") {
       if (!db) return socket.emit("auth_error", { message: "Database not ready." });
       try {
         const user = await db.collection('users').findOne({ _id: new ObjectId(user_id) });
         if (user && (user.status === "rejected" || user.is_banned)) {
+          delete connected_users[socket.id];
           return socket.emit("auth_rejected", { message: "Account has been rejected." });
         }
       } catch (e) {
@@ -473,14 +486,6 @@ io.on('connection', (socket) => {
       }
     }
     
-    connected_users[socket.id] = {
-      id: claims.sub,
-      username: claims.username,
-      fullName: claims.full_name,
-      role: claims.role,
-      societyId: claims.society_id,
-      peerId: data.peerId
-    };
     socket.emit("authenticated", { status: "ok", user: connected_users[socket.id] });
     const uniqueUsers = new Set(Object.values(connected_users).map(u => u.id || u.username));
     io.emit('online_count', uniqueUsers.size);
